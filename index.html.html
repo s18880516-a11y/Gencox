@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GENCOX | GenZ Streetwear & Drip Culture</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Space Grotesk & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#09090b',
+                            card: '#121217',
+                            border: '#27272a',
+                            neonGreen: '#ccff00',
+                            neonPink: '#ff0055',
+                            neonPurple: '#a855f7',
+                            neonBlue: '#00f0ff'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #09090b;
+            color: #f4f4f5;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .glass-card {
+            background: rgba(18, 18, 23, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-nav {
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .text-glow-green {
+            text-shadow: 0 0 12px rgba(204, 255, 0, 0.5);
+        }
+        .text-glow-pink {
+            text-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
+        }
+        .btn-neon {
+            background: #ccff00;
+            color: #000;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 15px rgba(204, 255, 0, 0.3);
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 25px rgba(204, 255, 0, 0.7);
+            transform: translateY(-2px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ccff00;
+        }
+    </style>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        window.FirebaseSDK = {
+            initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously,
+            getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp
+        };
+    </script>
+</head>
+<body class="bg-brand-black text-zinc-100 min-h-screen flex flex-col">
+
+    <div id="announcementBar" class="bg-gradient-to-r from-brand-neonPink via-brand-neonPurple to-brand-neonBlue text-black font-extrabold text-xs py-1.5 px-4 text-center tracking-wider uppercase font-display flex justify-between items-center px-6">
+        <span class="hidden sm:inline">⚡ FLASH SALE: FREE SHIPPING ON ORDERS ABOVE ₹1,499 ⚡</span>
+        <span class="mx-auto sm:mx-0">USE CODE <span class="bg-black text-brand-neonGreen px-1.5 py-0.5 rounded font-mono">GENZ10</span> FOR 10% OFF</span>
+        <button onclick="toggleFirebaseModal()" class="hidden md:flex items-center gap-1.5 text-[10px] bg-black/30 hover:bg-black/60 text-white px-2 py-0.5 rounded border border-white/20 transition">
+            <i class="fa-solid fa-server text-brand-neonGreen"></i> DB Status
+        </button>
+    </div>
+
+    <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="filterCategory('All')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-neonGreen to-emerald-500 flex items-center justify-center text-black font-display font-black text-2xl shadow-lg shadow-brand-neonGreen/20">
+                        G
+                    </div>
+                    <div>
+                        <span class="font-display font-black text-2xl md:text-3xl tracking-tighter text-white">GENCOX<span class="text-brand-neonGreen">.</span></span>
+                        <span class="block text-[9px] tracking-widest text-zinc-400 font-mono uppercase -mt-1">Drip & Streetwear</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8 relative">
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search oversized hoodies, cargo pants, acid tees..." 
+                        class="w-full bg-zinc-900/90 text-sm text-zinc-100 placeholder-zinc-500 rounded-full py-2.5 pl-11 pr-4 border border-zinc-800 focus:outline-none focus:border-brand-neonGreen transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-zinc-500 text-sm"></i>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- DB Config Toggle -->
+                    <button onclick="toggleFirebaseModal()" class="p-2.5 text-zinc-400 hover:text-brand-neonGreen rounded-full hover:bg-zinc-800/60 transition" title="Database Configuration">
+                        <i class="fa-solid fa-database text-lg"></i>
+                    </button>
+
+                    <!-- Admin Studio Button -->
+                    <button id="adminNavBtn" onclick="openAdminPortal()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-semibold text-zinc-200 transition">
+                        <i class="fa-solid fa-user-shield text-brand-neonGreen"></i>
+                        <span class="hidden sm:inline" id="adminNavText">Admin Studio</span>
+                    </button>
+
+                    <!-- Cart Button -->
+                    <button onclick="toggleCartDrawer()" class="relative p-2.5 text-zinc-100 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-full transition">
+                        <i class="fa-solid fa-bag-shopping text-lg"></i>
+                        <span id="cartBadge" class="absolute -top-1 -right-1 bg-brand-neonPink text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-brand-black scale-0 transition-transform duration-300">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-3">
+            <div class="relative">
+                <input type="text" oninput="handleSearch(this.value)" placeholder="Search drip streetwear..." 
+                    class="w-full bg-zinc-900 text-sm text-zinc-100 placeholder-zinc-500 rounded-full py-2 pl-10 pr-4 border border-zinc-800 focus:outline-none focus:border-brand-neonGreen">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-zinc-500 text-xs"></i>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative overflow-hidden pt-8 pb-12 md:py-20 border-b border-zinc-800/60">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-neonGreen/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-brand-neonPink/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-brand-neonGreen/30 text-brand-neonGreen font-mono text-xs font-semibold mb-6">
+                        <span class="w-2 h-2 rounded-full bg-brand-neonGreen animate-ping"></span>
+                        DROP #026: CYBER REBELLION LIVE
+                    </div>
+                    <h1 class="font-display font-black text-4xl sm:text-6xl md:text-7xl tracking-tight uppercase leading-none mb-6">
+                        WEAR THE <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-neonGreen via-brand-neonBlue to-brand-neonPink">FUTURE.</span><br/>
+                        NO ORDINARY DRIP.
+                    </h1>
+                    <p class="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 mb-8 font-light leading-relaxed">
+                        High-density oversized cottons, reflective utility prints, and raw cyberpunk aesthetics engineered for the modern Indian GenZ generation.
+                    </p>
+                    <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+                        <a href="#catalogSection" class="btn-neon px-8 py-4 rounded-xl text-sm uppercase tracking-wider flex items-center gap-2">
+                            Explore Catalog <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                        <button onclick="filterCategory('Oversized')" class="px-6 py-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-sm font-semibold tracking-wider text-zinc-200 transition flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-brand-neonPink"></i> Oversized Collection
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="relative w-full max-w-sm sm:max-w-md aspect-[4/5] rounded-2xl overflow-hidden glass-card p-3 shadow-2xl">
+                        <img id="heroImage" src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80" alt="Gencox Streetwear Drop" class="w-full h-full object-cover rounded-xl filter brightness-95 hover:scale-105 transition duration-700">
+                        <div class="absolute bottom-6 left-6 right-6 p-4 rounded-xl glass-card border border-white/10 bg-black/60 backdrop-blur-md">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-mono text-brand-neonGreen">BEST SELLER</p>
+                                    <p class="font-display font-bold text-lg">Cyberpunk Utility Cargo</p>
+                                </div>
+                                <p class="font-display font-bold text-xl text-white">₹2,499</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full" id="catalogSection">
+        
+        <!-- Category Chips -->
+        <div class="flex items-center justify-between mb-8 flex-wrap gap-4 border-b border-zinc-800/80 pb-6">
+            <div>
+                <h2 class="font-display font-bold text-2xl sm:text-3xl text-white flex items-center gap-3">
+                    FRESH DROPS <span id="itemCountBadge" class="text-xs bg-zinc-800 text-brand-neonGreen px-2.5 py-1 rounded-full font-mono">0 Items</span>
+                </h2>
+                <p class="text-zinc-400 text-xs sm:text-sm mt-1">Select tags or search to filter the streetwear collection</p>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 w-full lg:w-auto scrollbar-none" id="categoryContainer">
+                <!-- Javascript will populate categories dynamically -->
+            </div>
+        </div>
+
+        <!-- Filter & Sorting Toolbar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800/80 mb-8">
+            <div class="flex items-center gap-4 flex-wrap">
+                <span class="text-xs text-zinc-400 font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-brand-neonGreen"></i> Max Price: <span id="priceValue" class="text-white font-bold">₹5,000</span>
+                </span>
+                <input type="range" id="priceRange" min="500" max="5000" step="100" value="5000" oninput="handlePriceSlider(this.value)" class="w-32 sm:w-48 accent-brand-neonGreen cursor-pointer">
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-zinc-400 font-mono">Sort By:</span>
+                <select id="sortSelect" onchange="handleSort(this.value)" class="bg-zinc-800 text-xs text-zinc-200 border border-zinc-700 rounded-lg py-2 px-3 focus:outline-none focus:border-brand-neonGreen cursor-pointer">
+                    <option value="featured">Featured Drops</option>
+                    <option value="lowHigh">Price: Low to High</option>
+                    <option value="highLow">Price: High to Low</option>
+                    <option value="name">Name (A-Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamic product cards rendered by JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyCatalog" class="hidden text-center py-20 glass-card rounded-2xl border border-zinc-800 my-8">
+            <i class="fa-solid fa-ghost text-5xl text-zinc-600 mb-4 animate-bounce"></i>
+            <h3 class="font-display text-xl font-bold text-zinc-300">No Drip Found!</h3>
+            <p class="text-zinc-500 text-sm mt-1 max-w-sm mx-auto">Try adjusting your category filter, price slider or search term.</p>
+            <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold text-brand-neonGreen border border-brand-neonGreen/30 transition">
+                Reset All Filters
+            </button>
+        </div>
+    </main>
+
+    <div id="cartDrawerOverlay" onclick="toggleCartDrawer()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cartDrawer" class="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-brand-card border-l border-zinc-800 z-50 transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+        <!-- Cart Header -->
+        <div class="p-6 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-bag-shopping text-brand-neonGreen text-xl"></i>
+                <h3 class="font-display font-bold text-xl text-white">Your Drip Cart</h3>
+            </div>
+            <button onclick="toggleCartDrawer()" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Cart Items List -->
+        <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- Cart Footer -->
+        <div class="p-6 border-t border-zinc-800 bg-zinc-950/80 space-y-4">
+            <!-- Promo Code Input -->
+            <div class="flex gap-2">
+                <input type="text" id="promoCodeInput" uppercase placeholder="Promo code (GENZ10)" class="flex-1 bg-zinc-900 border border-zinc-800 text-xs px-3 py-2 rounded-lg text-zinc-200 focus:outline-none focus:border-brand-neonGreen">
+                <button onclick="applyPromoCode()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-brand-neonGreen rounded-lg border border-zinc-700 transition">
+                    Apply
+                </button>
+            </div>
+            <div id="promoMessage" class="text-[11px] font-mono"></div>
+
+            <!-- Price Summary -->
+            <div class="space-y-2 text-xs text-zinc-400 font-mono">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span id="cartSubtotal" class="text-zinc-200">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Discount:</span>
+                    <span id="cartDiscount" class="text-brand-neonGreen">-₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Estimated GST (12%):</span>
+                    <span id="cartGst" class="text-zinc-200">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Charges:</span>
+                    <span id="cartShipping" class="text-zinc-200">₹0</span>
+                </div>
+                <div class="flex justify-between pt-2 border-t border-zinc-800 text-base font-bold text-white font-display">
+                    <span>Total Amount:</span>
+                    <span id="cartTotal" class="text-brand-neonGreen">₹0</span>
+                </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button id="checkoutBtn" onclick="openCheckoutModal()" disabled class="w-full btn-neon py-3.5 rounded-xl uppercase tracking-wider text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                Proceed To Checkout <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <div id="checkoutModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card max-w-2xl w-full rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl my-8">
+            <div class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+                <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-brand-neonGreen"></i> Secure Checkout
+                </h3>
+                <button onclick="closeCheckoutModal()" class="text-zinc-400 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="checkoutForm" onsubmit="handlePlaceOrder(event)" class="p-6 space-y-6">
+                <!-- Customer Details -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-mono text-brand-neonGreen uppercase tracking-wider">1. Customer Information</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Full Name *</label>
+                            <input type="text" id="custName" required placeholder="Aarav Sharma" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Phone Number (UPI linked) *</label>
+                            <input type="tel" id="custPhone" required placeholder="+91 9876543210" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1">Delivery Address *</label>
+                        <textarea id="custAddress" required rows="2" placeholder="Flat / House No, Street, Landmark..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-neonGreen"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">City *</label>
+                            <input type="text" id="custCity" required placeholder="Mumbai" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-zinc-300 mb-1">Pincode *</label>
+                            <input type="text" id="custPincode" required placeholder="400001" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="space-y-4 pt-4 border-t border-zinc-800">
+                    <h4 class="text-xs font-mono text-brand-neonGreen uppercase tracking-wider">2. Choose Payment Mode</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer border border-zinc-800 bg-zinc-900/50 p-3 rounded-xl flex items-center gap-3 hover:border-brand-neonGreen transition">
+                            <input type="radio" name="paymentMethod" value="UPI" checked onchange="togglePaymentDetails('UPI')" class="accent-brand-neonGreen">
+                            <div>
+                                <p class="text-xs font-bold text-white">UPI / QR Code</p>
+                                <p class="text-[10px] text-zinc-400">GPay, PhonePe, Paytm</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer border border-zinc-800 bg-zinc-900/50 p-3 rounded-xl flex items-center gap-3 hover:border-brand-neonGreen transition">
+                            <input type="radio" name="paymentMethod" value="COD" onchange="togglePaymentDetails('COD')" class="accent-brand-neonGreen">
+                            <div>
+                                <p class="text-xs font-bold text-white">Cash on Delivery</p>
+                                <p class="text-[10px] text-zinc-400">Pay at doorstep</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- UPI QR Display -->
+                    <div id="upiDetailBox" class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-center space-y-3">
+                        <p class="text-xs text-zinc-300 font-mono">Scan QR Code using any UPI App:</p>
+                        <div class="w-36 h-36 mx-auto bg-white p-2 rounded-lg flex items-center justify-center">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=gencox@upi%26pn=Gencox%20Store" alt="UPI QR" class="w-full h-full">
+                        </div>
+                        <p class="text-[11px] text-zinc-400 font-mono">VPA ID: <span class="text-brand-neonGreen font-bold">gencox@upi</span></p>
+                    </div>
+                </div>
+
+                <!-- Total Summary Banner -->
+                <div class="bg-zinc-900 p-4 rounded-xl flex justify-between items-center border border-zinc-800">
+                    <div>
+                        <p class="text-xs text-zinc-400 font-mono">Payable Total:</p>
+                        <p id="checkoutFinalTotal" class="text-xl font-display font-bold text-brand-neonGreen">₹0</p>
+                    </div>
+                    <button type="submit" id="submitOrderBtn" class="btn-neon px-6 py-3 rounded-xl text-xs uppercase tracking-wider flex items-center gap-2">
+                        <span>Confirm & Place Order</span>
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="orderSuccessModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full rounded-2xl border border-zinc-800 p-6 text-center space-y-6 shadow-2xl">
+            <div class="w-16 h-16 bg-brand-neonGreen/20 text-brand-neonGreen rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h3 class="font-display font-bold text-2xl text-white">ORDER CONFIRMED!</h3>
+                <p class="text-xs text-zinc-400 font-mono mt-1">Order ID: <span id="placedOrderId" class="text-brand-neonGreen font-bold">#GCX-8891</span></p>
+            </div>
+            
+            <div class="bg-zinc-900/80 p-4 rounded-xl text-left border border-zinc-800 space-y-3">
+                <h4 class="text-xs font-mono text-zinc-400 uppercase">Live Delivery Tracking Status</h4>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center gap-3 text-brand-neonGreen font-bold">
+                        <i class="fa-solid fa-box text-sm"></i> Order Saved in Database
+                    </div>
+                    <div class="flex items-center gap-3 text-zinc-500">
+                        <i class="fa-solid fa-shirt text-sm"></i> Quality Check & Packing
+                    </div>
+                    <div class="flex items-center gap-3 text-zinc-500">
+                        <i class="fa-solid fa-truck-fast text-sm"></i> Handed to Courier
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-xs text-zinc-400">Confirmation SMS & tracking link dispatched to your mobile number.</p>
+
+            <button onclick="closeSuccessModal()" class="w-full btn-neon py-3 rounded-xl text-xs uppercase tracking-wider">
+                Continue Shopping
+            </button>
+        </div>
+    </div>
+
+    <div id="adminModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-card max-w-5xl w-full rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl my-6 min-h-[600px] flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-950">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-brand-neonGreen/10 text-brand-neonGreen">
+                        <i class="fa-solid fa-user-shield text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-xl text-white">Gencox Admin Studio</h3>
+                        <p class="text-xs text-zinc-400 font-mono" id="adminAuthStatus">Status: Unauthenticated</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminPortal()" class="text-zinc-400 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Login View -->
+            <div id="adminLoginSection" class="p-8 max-w-md mx-auto my-auto w-full text-center space-y-6">
+                <div class="space-y-2">
+                    <i class="fa-solid fa-lock text-4xl text-brand-neonGreen mb-2"></i>
+                    <h4 class="font-display font-bold text-2xl text-white">Admin Authentication</h4>
+                    <p class="text-xs text-zinc-400">Sign in with Firebase Auth or enter the Master Studio Pin.</p>
+                </div>
+
+                <form onsubmit="handleAdminLogin(event)" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1">Email / Secret PIN</label>
+                        <input type="text" id="adminEmail" required placeholder="admin@gencox.in or Master PIN (GENCOX2026)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1">Password</label>
+                        <input type="password" id="adminPass" placeholder="•••••••• (Leave blank if using PIN)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-brand-neonGreen">
+                    </div>
+                    <button type="submit" class="w-full btn-neon py-3 rounded-xl text-xs uppercase tracking-wider font-bold">
+                        Authenticate Studio
+                    </button>
+                </form>
+                <p class="text-[11px] text-zinc-500 font-mono">Demo Fallback PIN: <span class="text-brand-neonGreen font-bold">GENCOX2026</span></p>
+            </div>
+
+            <!-- Authenticated Admin Studio Dashboard -->
+            <div id="adminDashboardSection" class="hidden flex-1 flex flex-col md:flex-row">
+                <!-- Sidebar Tabs -->
+                <div class="w-full md:w-60 bg-zinc-950 p-4 border-r border-zinc-800 space-y-2">
+                    <button onclick="switchAdminTab('orders')" id="tabOrdersBtn" class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 bg-brand-neonGreen text-black">
+                        <i class="fa-solid fa-receipt"></i> Orders (<span id="adminOrderCount">0</span>)
+                    </button>
+                    <button onclick="switchAdminTab('products')" id="tabProductsBtn" class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 text-zinc-400 hover:bg-zinc-900 transition">
+                        <i class="fa-solid fa-box-open"></i> Manage Products
+                    </button>
+                    <button onclick="switchAdminTab('addProduct')" id="tabAddProductBtn" class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 text-zinc-400 hover:bg-zinc-900 transition">
+                        <i class="fa-solid fa-plus"></i> Add New Product
+                    </button>
+                    <div class="pt-6 mt-6 border-t border-zinc-800">
+                        <button onclick="handleAdminLogout()" class="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-950/30 transition flex items-center gap-3">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout Studio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="flex-1 p-6 bg-zinc-900/40 overflow-y-auto max-h-[600px]">
+                    <!-- Orders View -->
+                    <div id="adminTabOrders" class="space-y-6">
+                        <!-- Stat Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                                <p class="text-xs text-zinc-400 font-mono">Total Firestore Revenue</p>
+                                <p id="adminTotalRevenue" class="text-2xl font-display font-bold text-brand-neonGreen mt-1">₹0</p>
+                            </div>
+                            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                                <p class="text-xs text-zinc-400 font-mono">Pending Dispatch</p>
+                                <p id="adminPendingOrders" class="text-2xl font-display font-bold text-amber-400 mt-1">0</p>
+                            </div>
+                            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                                <p class="text-xs text-zinc-400 font-mono">Completed Deliveries</p>
+                                <p id="adminCompletedOrders" class="text-2xl font-display font-bold text-emerald-400 mt-1">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Orders Table -->
+                        <div class="bg-zinc-950 rounded-xl border border-zinc-800 overflow-hidden">
+                            <div class="p-4 border-b border-zinc-800 font-display font-bold text-sm text-white flex justify-between items-center">
+                                <span>Recent Customer Orders (Firestore Live Sync)</span>
+                                <button onclick="loadFirestoreOrders()" class="text-xs text-brand-neonGreen hover:underline">
+                                    <i class="fa-solid fa-rotate-right"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs text-zinc-300">
+                                    <thead class="bg-zinc-900 text-zinc-400 uppercase font-mono text-[10px]">
+                                        <tr>
+                                            <th class="p-3">Order ID</th>
+                                            <th class="p-3">Customer</th>
+                                            <th class="p-3">Items</th>
+                                            <th class="p-3">Total (₹)</th>
+                                            <th class="p-3">Payment</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminOrdersTable" class="divide-y divide-zinc-800/60">
+                                        <!-- Rendered by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manage Products Tab -->
+                    <div id="adminTabProducts" class="hidden space-y-4">
+                        <h4 class="font-display font-bold text-lg text-white">Live Catalog Manager</h4>
+                        <div id="adminProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Add Product Form Tab -->
+                    <div id="adminTabAddProduct" class="hidden space-y-4 max-w-xl">
+                        <h4 class="font-display font-bold text-lg text-white">Add Apparel Item to Firestore</h4>
+                        <form onsubmit="handleAddProductSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-zinc-300 mb-1">Product Title</label>
+                                <input type="text" id="prodTitle" required placeholder="Acid Wash Vintage Tee" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Price in Rupees (₹)</label>
+                                    <input type="number" id="prodPrice" required placeholder="1499" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Category</label>
+                                    <select id="prodCategory" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white">
+                                        <option value="Oversized">Oversized</option>
+                                        <option value="Streetwear">Streetwear</option>
+                                        <option value="Drip">Drip</option>
+                                        <option value="Vintage">Vintage</option>
+                                        <option value="Cyber">Cyber</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-zinc-300 mb-1">Image URL</label>
+                                <input type="url" id="prodImg" required placeholder="https://images.unsplash.com/..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-zinc-300 mb-1">Description</label>
+                                <textarea id="prodDesc" rows="3" required placeholder="400 GSM Heavyweight Cotton, Relaxed Drop Shoulder Fit..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white"></textarea>
+                            </div>
+                            <button type="submit" class="btn-neon px-6 py-3 rounded-xl text-xs uppercase tracking-wider font-bold">
+                                Publish Product to Database
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="firebaseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-lg w-full rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                <h3 class="font-display font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fa-solid fa-server text-brand-neonGreen"></i> Firebase Live Config
+                </h3>
+                <button onclick="toggleFirebaseModal()" class="text-zinc-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+                Paste your custom Firebase credentials below to link your own Google Firebase Firestore project for real live orders.
+            </p>
+            <textarea id="firebaseConfigText" rows="6" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "gencox-store.firebaseapp.com",
+  "projectId": "gencox-store",
+  "storageBucket": "gencox-store.appspot.com",
+  "messagingSenderId": "123456...",
+  "appId": "1:123456..."
+}' class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-brand-neonGreen focus:outline-none"></textarea>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="toggleFirebaseModal()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs rounded-lg text-zinc-300">Cancel</button>
+                <button onclick="saveCustomFirebaseConfig()" class="btn-neon px-5 py-2 rounded-lg text-xs font-bold">Save & Re-initialize</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quickViewModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-3xl w-full rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl relative">
+            <button onclick="closeQuickView()" class="absolute top-4 right-4 z-10 p-2 bg-black/60 rounded-full text-zinc-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div id="quickViewContent" class="grid md:grid-cols-2 p-6 gap-6">
+                <!-- Javascript Quick View Loader -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-zinc-900 border border-brand-neonGreen text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 font-mono text-xs">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-brand-neonGreen text-base"></i>
+        <span id="toastMsg">Action completed successfully!</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // DEFAULT PRODUCT CATALOG (GENZ DRIP items)
+        // ==========================================
+        const DEFAULT_PRODUCTS = [
+            {
+                id: "prod-1",
+                title: "Cyberpunk Utility Cargo Pant",
+                price: 2499,
+                category: "Streetwear",
+                tags: ["Best Seller", "Utility"],
+                img: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
+                desc: "Heavyweight 380 GSM ripstop cotton with 6 multi-pocket design, tactical D-rings, and adjustable ankle cuffs.",
+                sizes: ["S", "M", "L", "XL"],
+                stock: 12
+            },
+            {
+                id: "prod-2",
+                title: "Acid Wash Rebel Oversized Tee",
+                price: 1299,
+                category: "Oversized",
+                tags: ["Acid Wash", "Heavy Cotton"],
+                img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80",
+                desc: "280 GSM combed cotton featuring vintage hand-washed acid wash effect and high-density puff chest print.",
+                sizes: ["M", "L", "XL", "XXL"],
+                stock: 25
+            },
+            {
+                id: "prod-3",
+                title: "Tokyo Neon Matrix Hoodie",
+                price: 2999,
+                category: "Cyber",
+                tags: ["3D Puff Print", "Reflective"],
+                img: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80",
+                desc: "420 GSM fleece fleece hoodie with double-layered hood, kangaroo pocket, and 3M reflective cyber typography.",
+                sizes: ["S", "M", "L", "XL"],
+                stock: 8
+            },
+            {
+                id: "prod-4",
+                title: "Distressed Vintage Denim Jacket",
+                price: 3499,
+                category: "Vintage",
+                tags: ["Hand Distressed", "Limited"],
+                img: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=800&q=80",
+                desc: "14oz rigid denim jacket with hand-crafted fraying, custom metal hardware, and oversized boxy fit.",
+                sizes: ["M", "L", "XL"],
+                stock: 5
+            },
+            {
+                id: "prod-5",
+                title: "Gencox Signature Drip Cap",
+                price: 899,
+                category: "Drip",
+                tags: ["Accessory"],
+                img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80",
+                desc: "Adjustable 6-panel strapback hat with high-build 3D embroidered Gencox front insignia.",
+                sizes: ["One Size"],
+                stock: 40
+            },
+            {
+                id: "prod-6",
+                title: "Glitch Graphic Drop Shoulder Tee",
+                price: 1199,
+                category: "Oversized",
+                tags: ["Trending"],
+                img: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+                desc: "Ultra relaxed drop shoulder fit with cyberpunk glitch typography on reverse back panel.",
+                sizes: ["S", "M", "L", "XL"],
+                stock: 18
+            }
+        ];
+
+        // Global Application State
+        let products = [...DEFAULT_PRODUCTS];
+        let filteredProducts = [...products];
+        let cart = [];
+        let selectedCategory = "All";
+        let maxPrice = 5000;
+        let searchQuery = "";
+        let appliedDiscount = 0; // percentage
+        let isAdminLoggedIn = false;
+
+        // Firebase Instances
+        let fbApp = null;
+        let fbDb = null;
+        let fbAuth = null;
+
+        // Default Firebase Config Fallback
+        let currentFirebaseConfig = {
+            apiKey: "AIzaSyDemoConfigKeyForGencoxApp2026",
+            authDomain: "gencox-demo.firebaseapp.com",
+            projectId: "gencox-demo",
+            storageBucket: "gencox-demo.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:demo"
+        };
+
+        // Initialize App on DOM Load
+        window.onload = function() {
+            initFirebase();
+            renderCategories();
+            renderProducts();
+            loadCartFromStorage();
+        };
+
+        // ==========================================
+        // FIREBASE SETUP & OPERATIONS
+        // ==========================================
+        function initFirebase() {
+            try {
+                const storedConfig = localStorage.getItem('gencox_fb_config');
+                if (storedConfig) {
+                    currentFirebaseConfig = JSON.parse(storedConfig);
+                }
+
+                if (window.FirebaseSDK && window.FirebaseSDK.initializeApp) {
+                    fbApp = window.FirebaseSDK.initializeApp(currentFirebaseConfig);
+                    fbDb = window.FirebaseSDK.getFirestore(fbApp);
+                    fbAuth = window.FirebaseSDK.getAuth(fbApp);
+
+                    // Auth State Change listener
+                    window.FirebaseSDK.onAuthStateChanged(fbAuth, (user) => {
+                        if (user) {
+                            isAdminLoggedIn = true;
+                            document.getElementById('adminNavText').innerText = "Admin (Logged In)";
+                            document.getElementById('adminAuthStatus').innerText = "Logged in as: " + (user.email || "Admin");
+                        } else {
+                            if (!localStorage.getItem('admin_session')) {
+                                isAdminLoggedIn = false;
+                                document.getElementById('adminNavText').innerText = "Admin Studio";
+                            }
+                        }
+                    });
+
+                    // Sync products from Firestore if available
+                    loadFirestoreProducts();
+                }
+            } catch (err) {
+                console.warn("Firebase fallback mode initialized:", err.message);
+            }
+        }
+
+        async function loadFirestoreProducts() {
+            if (!fbDb) return;
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'gencox-store';
+                const prodRef = window.FirebaseSDK.collection(fbDb, 'artifacts', appId, 'public', 'data', 'products');
+                const snapshot = await window.FirebaseSDK.getDocs(prodRef);
+                
+                if (!snapshot.empty) {
+                    const dbProds = [];
+                    snapshot.forEach(doc => {
+                        dbProds.push({ id: doc.id, ...doc.data() });
+                    });
+                    products = dbProds;
+                    filterProducts();
+                    showToast("Database catalog loaded successfully!");
+                }
+            } catch (e) {
+                console.log("Using local default catalog fallback.");
+            }
+        }
+
+        async function saveOrderToFirestore(orderData) {
+            if (!fbDb) return false;
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'gencox-store';
+                const ordersRef = window.FirebaseSDK.collection(fbDb, 'artifacts', appId, 'public', 'data', 'orders');
+                await window.FirebaseSDK.addDoc(ordersRef, {
+                    ...orderData,
+                    createdAt: new Date().toISOString()
+                });
+                return true;
+            } catch (err) {
+                console.error("Firestore Save Order Error:", err);
+                return false;
+            }
+        }
+
+        async function loadFirestoreOrders() {
+            if (!fbDb) return;
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'gencox-store';
+                const ordersRef = window.FirebaseSDK.collection(fbDb, 'artifacts', appId, 'public', 'data', 'orders');
+                const snapshot = await window.FirebaseSDK.getDocs(ordersRef);
+                
+                const orders = [];
+                snapshot.forEach(doc => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderAdminOrdersTable(orders);
+            } catch (e) {
+                console.error("Error fetching orders:", e);
+            }
+        }
+
+        // ==========================================
+        // CATALOG & PRODUCT RENDERING
+        // ==========================================
+        function renderCategories() {
+            const categories = ["All", "Oversized", "Streetwear", "Drip", "Vintage", "Cyber"];
+            const container = document.getElementById("categoryContainer");
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" 
+                    class="px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap ${selectedCategory === cat ? 'bg-brand-neonGreen text-black shadow-lg shadow-brand-neonGreen/20 font-bold' : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800'}">
+                    ${cat}
+                </button>
+            `).join("");
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById("productGrid");
+            const empty = document.getElementById("emptyCatalog");
+            document.getElementById("itemCountBadge").innerText = `${filteredProducts.length} Items`;
+
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = "";
+                empty.classList.remove("hidden");
+                return;
+            }
+            empty.classList.add("hidden");
+
+            grid.innerHTML = filteredProducts.map(prod => `
+                <div class="group glass-card rounded-2xl overflow-hidden border border-zinc-800/80 hover:border-brand-neonGreen/50 transition duration-300 flex flex-col justify-between">
+                    <div class="relative overflow-hidden aspect-[4/5] bg-zinc-900 cursor-pointer" onclick="openQuickView('${prod.id}')">
+                        <img src="${prod.img}" alt="${prod.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 filter brightness-95">
+                        
+                        <!-- Badges -->
+                        <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                            <span class="bg-black/80 backdrop-blur-md text-brand-neonGreen text-[10px] font-mono px-2.5 py-1 rounded-full border border-brand-neonGreen/30 uppercase font-bold">
+                                ${prod.category}
+                            </span>
+                            ${prod.tags ? prod.tags.map(t => `<span class="bg-brand-neonPink/90 text-white text-[10px] font-mono px-2 py-0.5 rounded-full uppercase font-bold">${t}</span>`).join('') : ''}
+                        </div>
+
+                        <!-- Stock Indicator -->
+                        <div class="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-zinc-300 font-mono">
+                            ⚡ Stock: ${prod.stock} left
+                        </div>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h3 onclick="openQuickView('${prod.id}')" class="font-display font-bold text-base text-zinc-100 hover:text-brand-neonGreen transition cursor-pointer line-clamp-1">
+                                ${prod.title}
+                            </h3>
+                            <p class="text-xs text-zinc-400 mt-1 line-clamp-2">${prod.desc}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-zinc-800/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-zinc-500 font-mono">Price</span>
+                                <p class="font-display font-bold text-lg text-white">₹${prod.price.toLocaleString('en-IN')}</p>
+                            </div>
+                            
+                            <button onclick="addToCart('${prod.id}')" class="btn-neon px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 font-bold">
+                                <i class="fa-solid fa-plus"></i> Add Drip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // Filter Handlers
+        function filterCategory(cat) {
+            selectedCategory = cat;
+            renderCategories();
+            filterProducts();
+        }
+
+        function handlePriceSlider(val) {
+            maxPrice = parseInt(val);
+            document.getElementById("priceValue").innerText = `₹${maxPrice.toLocaleString('en-IN')}`;
+            filterProducts();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase();
+            filterProducts();
+        }
+
+        function handleSort(criteria) {
+            if (criteria === "lowHigh") {
+                filteredProducts.sort((a, b) => a.price - b.price);
+            } else if (criteria === "highLow") {
+                filteredProducts.sort((a, b) => b.price - a.price);
+            } else if (criteria === "name") {
+                filteredProducts.sort((a, b) => a.title.localeCompare(b.title));
+            } else {
+                filterProducts();
+            }
+            renderProducts();
+        }
+
+        function filterProducts() {
+            filteredProducts = products.filter(p => {
+                const matchesCat = (selectedCategory === "All" || p.category === selectedCategory);
+                const matchesPrice = p.price <= maxPrice;
+                const matchesSearch = p.title.toLowerCase().includes(searchQuery) || p.desc.toLowerCase().includes(searchQuery);
+                return matchesCat && matchesPrice && matchesSearch;
+            });
+            renderProducts();
+        }
+
+        function resetFilters() {
+            selectedCategory = "All";
+            maxPrice = 5000;
+            searchQuery = "";
+            document.getElementById("priceRange").value = 500;
+            document.getElementById("priceValue").innerText = "₹5,000";
+            document.getElementById("searchInput").value = "";
+            renderCategories();
+            filterProducts();
+        }
+
+        // ==========================================
+        // CART & CHECKOUT LOGIC
+        // ==========================================
+        function addToCart(productId, size = "L") {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            const existingIndex = cart.findIndex(item => item.id === productId && item.size === size);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += 1;
+            } else {
+                cart.push({ ...prod, size: size, qty: 1 });
+            }
+
+            saveCartToStorage();
+            updateCartUI();
+            showToast(`Added ${prod.title} (${size}) to Cart!`);
+            
+            // Pulse cart badge
+            const badge = document.getElementById("cartBadge");
+            badge.classList.add("scale-125");
+            setTimeout(() => badge.classList.remove("scale-125"), 300);
+        }
+
+        function updateCartQuantity(id, size, change) {
+            const index = cart.findIndex(item => item.id === id && item.size === size);
+            if (index > -1) {
+                cart[index].qty += change;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+            }
+            saveCartToStorage();
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById("cartItemsContainer");
+            const cartBadge = document.getElementById("cartBadge");
+            const checkoutBtn = document.getElementById("checkoutBtn");
+
+            const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+            cartBadge.innerText = totalItems;
+            cartBadge.style.transform = totalItems > 0 ? 'scale(1)' : 'scale(0)';
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-zinc-500 space-y-3">
+                        <i class="fa-solid fa-bag-shopping text-4xl text-zinc-700"></i>
+                        <p class="text-sm">Your drip bag is empty right now.</p>
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+                calculateCartTotals(0);
+                return;
+            }
+
+            checkoutBtn.disabled = false;
+            let subtotal = 0;
+
+            container.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.qty;
+                subtotal += itemTotal;
+
+                return `
+                    <div class="glass-card p-3 rounded-xl border border-zinc-800/80 flex items-center gap-3">
+                        <img src="${item.img}" class="w-16 h-20 object-cover rounded-lg bg-zinc-900">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-display font-bold text-xs text-white truncate">${item.title}</h4>
+                            <p class="text-[10px] text-zinc-400 font-mono mt-0.5">Size: <span class="text-brand-neonGreen font-bold">${item.size}</span></p>
+                            <p class="font-display font-bold text-sm text-white mt-1">₹${item.price.toLocaleString('en-IN')}</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-zinc-900 px-2 py-1 rounded-lg border border-zinc-800">
+                            <button onclick="updateCartQuantity('${item.id}', '${item.size}', -1)" class="text-xs text-zinc-400 hover:text-brand-neonPink px-1">-</button>
+                            <span class="text-xs font-bold text-white font-mono">${item.qty}</span>
+                            <button onclick="updateCartQuantity('${item.id}', '${item.size}', 1)" class="text-xs text-zinc-400 hover:text-brand-neonGreen px-1">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            calculateCartTotals(subtotal);
+        }
+
+        function calculateCartTotals(subtotal) {
+            const discountAmount = Math.round(subtotal * (appliedDiscount / 100));
+            const afterDiscount = subtotal - discountAmount;
+            const gst = Math.round(afterDiscount * 0.12); // 12% GST
+            const shipping = (subtotal > 1499 || subtotal === 0) ? 0 : 99;
+            const grandTotal = subtotal === 0 ? 0 : (afterDiscount + gst + shipping);
+
+            document.getElementById("cartSubtotal").innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+            document.getElementById("cartDiscount").innerText = `-₹${discountAmount.toLocaleString('en-IN')}`;
+            document.getElementById("cartGst").innerText = `₹${gst.toLocaleString('en-IN')}`;
+            document.getElementById("cartShipping").innerText = shipping === 0 ? 'FREE' : `₹${shipping}`;
+            document.getElementById("cartTotal").innerText = `₹${grandTotal.toLocaleString('en-IN')}`;
+            document.getElementById("checkoutFinalTotal").innerText = `₹${grandTotal.toLocaleString('en-IN')}`;
+        }
+
+        function applyPromoCode() {
+            const code = document.getElementById("promoCodeInput").value.trim().toUpperCase();
+            const msg = document.getElementById("promoMessage");
+
+            if (code === "GENZ10") {
+                appliedDiscount = 10;
+                msg.className = "text-[11px] font-mono text-brand-neonGreen";
+                msg.innerText = "✓ 10% GENZ Promo discount applied!";
+            } else if (code === "DRIP20") {
+                appliedDiscount = 20;
+                msg.className = "text-[11px] font-mono text-brand-neonGreen";
+                msg.innerText = "✓ 20% DRIP Promo discount applied!";
+            } else {
+                appliedDiscount = 0;
+                msg.className = "text-[11px] font-mono text-rose-400";
+                msg.innerText = "Invalid promo code.";
+            }
+            updateCartUI();
+        }
+
+        function toggleCartDrawer() {
+            const drawer = document.getElementById("cartDrawer");
+            const overlay = document.getElementById("cartDrawerOverlay");
+            
+            drawer.classList.toggle("translate-x-full");
+            overlay.classList.toggle("opacity-0");
+            overlay.classList.toggle("pointer-events-none");
+        }
+
+        function saveCartToStorage() {
+            localStorage.setItem("gencox_cart", JSON.stringify(cart));
+        }
+
+        function loadCartFromStorage() {
+            const saved = localStorage.getItem("gencox_cart");
+            if (saved) {
+                try { cart = JSON.parse(saved); } catch(e) {}
+            }
+            updateCartUI();
+        }
+
+        // ==========================================
+        // CHECKOUT & ORDER PLACEMENT
+        // ==========================================
+        function openCheckoutModal() {
+            toggleCartDrawer();
+            document.getElementById("checkoutModal").classList.remove("hidden");
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById("checkoutModal").classList.add("hidden");
+        }
+
+        function togglePaymentDetails(mode) {
+            const upiBox = document.getElementById("upiDetailBox");
+            if (mode === 'UPI') {
+                upiBox.classList.remove("hidden");
+            } else {
+                upiBox.classList.add("hidden");
+            }
+        }
+
+        async function handlePlaceOrder(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById("submitOrderBtn");
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Placing Order...`;
+
+            const orderId = "GCX-" + Math.floor(1000 + Math.random() * 9000);
+            const totalText = document.getElementById("cartTotal").innerText;
+
+            const orderPayload = {
+                orderId: orderId,
+                customer: {
+                    name: document.getElementById("custName").value,
+                    phone: document.getElementById("custPhone").value,
+                    address: document.getElementById("custAddress").value,
+                    city: document.getElementById("custCity").value,
+                    pincode: document.getElementById("custPincode").value,
+                },
+                paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
+                items: cart,
+                totalAmount: totalText,
+                status: "Pending Dispatch"
+            };
+
+            // Save to Firebase Firestore
+            const savedInFirestore = await saveOrderToFirestore(orderPayload);
+
+            // Also keep local fallback orders array
+            const localOrders = JSON.parse(localStorage.getItem('gencox_orders') || '[]');
+            localOrders.push(orderPayload);
+            localStorage.setItem('gencox_orders', JSON.stringify(localOrders));
+
+            // Reset Cart
+            cart = [];
+            saveCartToStorage();
+            updateCartUI();
+
+            closeCheckoutModal();
+            document.getElementById("placedOrderId").innerText = "#" + orderId;
+            document.getElementById("orderSuccessModal").classList.remove("hidden");
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Confirm & Place Order</span> <i class="fa-solid fa-check"></i>`;
+        }
+
+        function closeSuccessModal() {
+            document.getElementById("orderSuccessModal").classList.add("hidden");
+        }
+
+        // ==========================================
+        // ADMIN STUDIO & AUTHENTICATION
+        // ==========================================
+        function openAdminPortal() {
+            document.getElementById("adminModal").classList.remove("hidden");
+            if (isAdminLoggedIn) {
+                showAdminDashboard();
+            } else {
+                document.getElementById("adminLoginSection").classList.remove("hidden");
+                document.getElementById("adminDashboardSection").classList.add("hidden");
+            }
+        }
+
+        function closeAdminPortal() {
+            document.getElementById("adminModal").classList.add("hidden");
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById("adminEmail").value.trim();
+            const passVal = document.getElementById("adminPass").value.trim();
+
+            if (inputVal === "GENCOX2026") {
+                // Master PIN Login
+                isAdminLoggedIn = true;
+                localStorage.setItem('admin_session', 'true');
+                showToast("Authenticated via Master Pin!");
+                showAdminDashboard();
+                return;
+            }
+
+            if (fbAuth) {
+                try {
+                    await window.FirebaseSDK.signInWithEmailAndPassword(fbAuth, inputVal, passVal);
+                    isAdminLoggedIn = true;
+                    showToast("Firebase Auth Success!");
+                    showAdminDashboard();
+                } catch (err) {
+                    showToast("Auth Failed: " + err.message, "error");
+                }
+            } else {
+                showToast("Use Secret Master Pin: GENCOX2026", "error");
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById("adminLoginSection").classList.add("hidden");
+            document.getElementById("adminDashboardSection").classList.remove("hidden");
+            switchAdminTab('orders');
+            loadFirestoreOrders();
+            renderAdminProductsGrid();
+        }
+
+        function handleAdminLogout() {
+            isAdminLoggedIn = false;
+            localStorage.removeItem('admin_session');
+            if (fbAuth) window.FirebaseSDK.signOut(fbAuth);
+            document.getElementById("adminLoginSection").classList.remove("hidden");
+            document.getElementById("adminDashboardSection").classList.add("hidden");
+            showToast("Logged out of Admin Studio");
+        }
+
+        function switchAdminTab(tab) {
+            const tabs = ['orders', 'products', 'addProduct'];
+            tabs.forEach(t => {
+                const el = document.getElementById("adminTab" + t.charAt(0).toUpperCase() + t.slice(1));
+                const btn = document.getElementById("tab" + t.charAt(0).toUpperCase() + t.slice(1) + "Btn");
+                if (t === tab) {
+                    el.classList.remove("hidden");
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 bg-brand-neonGreen text-black";
+                } else {
+                    el.classList.add("hidden");
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-3 text-zinc-400 hover:bg-zinc-900 transition";
+                }
+            });
+        }
+
+        function renderAdminOrdersTable(orders) {
+            const tableBody = document.getElementById("adminOrdersTable");
+            const localOrders = JSON.parse(localStorage.getItem('gencox_orders') || '[]');
+            const allOrders = [...orders, ...localOrders];
+
+            document.getElementById("adminOrderCount").innerText = allOrders.length;
+            
+            let revenue = 0;
+            let pending = 0;
+            let completed = 0;
+
+            if (allOrders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-zinc-500">No orders recorded yet.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = allOrders.map(o => {
+                const numVal = parseInt((o.totalAmount || "0").replace(/[^0-9]/g, ''));
+                revenue += numVal;
+                if (o.status === "Delivered") completed++; else pending++;
+
+                return `
+                    <tr>
+                        <td class="p-3 font-mono font-bold text-brand-neonGreen">#${o.orderId}</td>
+                        <td class="p-3">
+                            <p class="font-bold text-white">${o.customer?.name || 'Customer'}</p>
+                            <p class="text-[10px] text-zinc-400">${o.customer?.phone}</p>
+                        </td>
+                        <td class="p-3 max-w-xs truncate">${o.items ? o.items.map(i=>`${i.qty}x ${i.title}`).join(', ') : 'Apparel Item'}</td>
+                        <td class="p-3 font-bold text-white">${o.totalAmount}</td>
+                        <td class="p-3 font-mono text-[10px]">${o.paymentMethod}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${o.status === 'Delivered' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'}">
+                                ${o.status}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            <button onclick="markOrderDelivered('${o.id || o.orderId}')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 px-2 py-1 rounded text-zinc-200">
+                                Dispatch
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+
+            document.getElementById("adminTotalRevenue").innerText = `₹${revenue.toLocaleString('en-IN')}`;
+            document.getElementById("adminPendingOrders").innerText = pending;
+            document.getElementById("adminCompletedOrders").innerText = completed;
+        }
+
+        function renderAdminProductsGrid() {
+            const grid = document.getElementById("adminProductsGrid");
+            grid.innerHTML = products.map(p => `
+                <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center gap-3">
+                    <img src="${p.img}" class="w-14 h-14 object-cover rounded-lg">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-xs text-white truncate">${p.title}</p>
+                        <p class="text-[10px] text-zinc-400 font-mono">₹${p.price} | Category: ${p.category}</p>
+                    </div>
+                    <button onclick="deleteProduct('${p.id}')" class="text-xs text-rose-400 hover:bg-rose-950/40 p-2 rounded-lg">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join("");
+        }
+
+        async function handleAddProductSubmit(e) {
+            e.preventDefault();
+            const newProd = {
+                id: "prod-" + Date.now(),
+                title: document.getElementById("prodTitle").value,
+                price: parseInt(document.getElementById("prodPrice").value),
+                category: document.getElementById("prodCategory").value,
+                img: document.getElementById("prodImg").value,
+                desc: document.getElementById("prodDesc").value,
+                sizes: ["S", "M", "L", "XL"],
+                stock: 20
+            };
+
+            products.unshift(newProd);
+            filterProducts();
+            renderAdminProductsGrid();
+            
+            // Save into Firestore database if online
+            if (fbDb) {
+                try {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gencox-store';
+                    const prodRef = window.FirebaseSDK.collection(fbDb, 'artifacts', appId, 'public', 'data', 'products');
+                    await window.FirebaseSDK.addDoc(prodRef, newProd);
+                    showToast("Product saved directly to Firestore!");
+                } catch(e) {}
+            } else {
+                showToast("Product added to local state!");
+            }
+
+            e.target.reset();
+            switchAdminTab('products');
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            filterProducts();
+            renderAdminProductsGrid();
+            showToast("Product removed!");
+        }
+
+        // ==========================================
+        // QUICK VIEW & UI UTILITIES
+        // ==========================================
+        function openQuickView(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            const modal = document.getElementById("quickViewModal");
+            const container = document.getElementById("quickViewContent");
+
+            container.innerHTML = `
+                <div class="aspect-[4/5] bg-zinc-900 rounded-xl overflow-hidden">
+                    <img src="${prod.img}" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col justify-between space-y-4">
+                    <div>
+                        <span class="text-xs font-mono text-brand-neonGreen uppercase tracking-widest">${prod.category}</span>
+                        <h3 class="font-display font-bold text-2xl text-white mt-1">${prod.title}</h3>
+                        <p class="font-display font-bold text-2xl text-brand-neonGreen mt-2">₹${prod.price.toLocaleString('en-IN')}</p>
+                        <p class="text-xs text-zinc-400 mt-4 leading-relaxed">${prod.desc}</p>
+                        
+                        <div class="mt-6 space-y-2">
+                            <label class="block text-xs font-mono text-zinc-300">Select Size:</label>
+                            <div class="flex gap-2" id="sizeSelector">
+                                ${prod.sizes.map(s => `
+                                    <button onclick="selectQuickSize(this, '${s}')" class="size-btn px-3 py-1.5 rounded-lg border border-zinc-800 text-xs font-bold text-zinc-300 hover:border-brand-neonGreen ${s==='L'?'border-brand-neonGreen text-brand-neonGreen':''}">
+                                        ${s}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="addToCart('${prod.id}', selectedQuickSize); closeQuickView();" class="w-full btn-neon py-3.5 rounded-xl uppercase tracking-wider text-xs font-bold">
+                        Add To Bag
+                    </button>
+                </div>
+            `;
+
+            window.selectedQuickSize = "L";
+            modal.classList.remove("hidden");
+        }
+
+        function selectQuickSize(btn, size) {
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('border-brand-neonGreen', 'text-brand-neonGreen'));
+            btn.classList.add('border-brand-neonGreen', 'text-brand-neonGreen');
+            window.selectedQuickSize = size;
+        }
+
+        function closeQuickView() {
+            document.getElementById("quickViewModal").classList.add("hidden");
+        }
+
+        function toggleFirebaseModal() {
+            const modal = document.getElementById("firebaseModal");
+            document.getElementById("firebaseConfigText").value = JSON.stringify(currentFirebaseConfig, null, 2);
+            modal.classList.toggle("hidden");
+        }
+
+        function saveCustomFirebaseConfig() {
+            try {
+                const text = document.getElementById("firebaseConfigText").value;
+                const parsed = JSON.parse(text);
+                localStorage.setItem("gencox_fb_config", JSON.stringify(parsed));
+                currentFirebaseConfig = parsed;
+                toggleFirebaseModal();
+                initFirebase();
+                showToast("Firebase Config Updated!");
+            } catch(e) {
+                alert("Invalid JSON format for Firebase configuration.");
+            }
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById("toast");
+            const toastMsg = document.getElementById("toastMsg");
+            const toastIcon = document.getElementById("toastIcon");
+
+            toastMsg.innerText = msg;
+            if (type === "error") {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-500 text-base";
+                toast.style.borderColor = "#f43f5e";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-brand-neonGreen text-base";
+                toast.style.borderColor = "#ccff00";
+            }
+
+            toast.classList.remove("translate-y-20", "opacity-0");
+            setTimeout(() => {
+                toast.classList.add("translate-y-20", "opacity-0");
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
